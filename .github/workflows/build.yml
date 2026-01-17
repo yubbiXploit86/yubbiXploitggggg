@@ -8,14 +8,17 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Download 7-Zip SFX
+        shell: cmd
         run: |
           curl -L https://www.7-zip.org/a/7z1900-extra.7z -o 7z.7z
           7z x 7z.7z
 
       - name: Build EXE from ayyubi.zip
+        shell: cmd
         run: |
           copy 7z1900-extra\7zsd.sfx sfx.exe
           echo ;!@Install@!UTF-8!> config.txt
@@ -26,5 +29,5 @@ jobs:
       - name: Upload EXE
         uses: actions/upload-artifact@v4
         with:
-          name: result
+          name: ayyubi-exe
           path: ayyubi.exe
