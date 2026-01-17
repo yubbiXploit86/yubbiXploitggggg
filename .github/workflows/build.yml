@@ -8,23 +8,26 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Download 7-Zip SFX
-        shell: cmd
         run: |
           curl -L https://www.7-zip.org/a/7z1900-extra.7z -o 7z.7z
           7z x 7z.7z
 
-      - name: Build EXE from ayyubi.zip
-        shell: cmd
+      - name: Build EXE safely (PowerShell)
+        shell: powershell
         run: |
-          copy 7z1900-extra\7zsd.sfx sfx.exe
-          echo ;!@Install@!UTF-8!> config.txt
-          echo RunProgram="cmd /c echo Extracted">> config.txt
-          echo ;!@InstallEnd@!>> config.txt
-          copy /b sfx.exe + config.txt + ayyubi.zip ayyubi.exe
+          Copy-Item "7z1900-extra\7zsd.sfx" "sfx.exe"
+
+          "@
+;!@Install@!UTF-8!
+RunProgram=`"cmd /c echo Extracted`"
+;!@InstallEnd@!
+@" | Out-File -Encoding ASCII config.txt
+
+          cmd /c copy /b sfx.exe+config.txt+ayyubi.zip ayyubi.exe
 
       - name: Upload EXE
         uses: actions/upload-artifact@v4
