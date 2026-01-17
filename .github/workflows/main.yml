@@ -1,0 +1,36 @@
+name: ZIP to EXE
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download 7-Zip SFX
+        run: |
+          curl -L https://www.7-zip.org/a/7z1900-extra.7z -o 7z.7z
+          7z x 7z.7z
+
+      - name: Build EXE safely (PowerShell)
+        shell: powershell
+        run: |
+          Copy-Item "7z1900-extra\7zsd.sfx" "sfx.exe"
+
+          "@
+;!@Install@!UTF-8!
+RunProgram=`"cmd /c echo Extracted`"
+;!@InstallEnd@!
+@" | Out-File -Encoding ASCII config.txt
+
+          cmd /c copy /b sfx.exe+config.txt+ayyubi.zip ayyubi.exe
+
+      - name: Upload EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: ayyubi-exe
+          path: ayyubi.exe
